@@ -14,10 +14,16 @@ class Vec : public vector<double>
 private:
   vector<double> vec;
   int dim;
+
 public:
+
+  Vec();
   Vec(const int dim);
-  double operator * (const Vec & other);
-  //Vec operator + (const Vec & other);
+  
+
+  friend double operator * (const Vec & A, const Vec & B);
+  friend Vec    operator + (const Vec & A, const Vec & B);
+  friend std::ostream & operator << (std::ostream & os, const Vec & A);
   //Vec operator += (const Vec & other);
   
 
@@ -34,24 +40,56 @@ std::normal_distribution<double> standard_normal(0.0, 1.0);
 
 
 
+Vec::Vec(void) : vector<double>()
+{
+}
+
 Vec::Vec(const int dim) : vector<double>(dim), dim (dim)
 {
 }
 
+Vec
+operator +(const Vec & A, const Vec & B)
+{
+  Vec temp(A.dim);
+
+  
+  if (A.dim != B.dim) return temp; // have to refresh myself on exceptions in C++;
+  cout << "vector addition between " << A << "\nand " << B << endl;
+  for (int i = 0; i < A.dim; ++i){
+    temp[i] = A[i] + B[i];
+  
+  }
+  return temp;
+}
+
+std::ostream&
+operator << (std::ostream & os, const Vec& A)
+{
+  os << "<";
+  for (auto iter = A.cbegin(); iter != A.end(); ++iter)
+  {
+    os << (*iter) << ", "; // theres a better way to do this
+  }
+  os << ">" ;
+  return os;
+}
+
 
 double
-Vec::operator * (const Vec & other)
+operator * (const Vec & A, const Vec & B)
 {
   double dot = 0.0;
 
-  if (this->dim != other.dim)
+  if (A.dim != B.dim)
       return -1;
-
-  for (auto iterthis = this->cbegin(), iterother = other.cbegin(); 
-       iterthis != this->end();
-       ++iterthis, ++iterother) 
+  cout << "vector inner product between A " << A << "\nand " << B << "\n(dot)" << endl;
+  // note here how we arent using the begin, nor an integer for indexing: cbegin returns a const iterator, disallowing reassignment or statechange
+  for (auto iterA = A.cbegin(), iterB = B.cbegin(); 
+       iterA != A.end();
+       ++iterA, ++iterB) 
   {
-    dot += (*iterthis) * (*iterother);
+    dot += (*iterA) * (*iterB);
   }
 
   return dot;
@@ -229,7 +267,7 @@ init(Vec & v, const int n_items)
   {
     double x = standard_normal(gen);
     cout << x << " ";
-    v.push_back(x);
+    v[i] = x;
   }
 
   cout << endl;
@@ -241,6 +279,8 @@ int main()
   init(v1, 9);
   init(v2, 9);
   double out = v1 * v2;
-  cout << out << endl;
+  Vec sum = v1 + v2;
+  cout << "dot product from A.T B : " << out << endl;
+  cout << "vector sum from A + B : " <<  sum << endl;
   return 0;      
 }
