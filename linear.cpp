@@ -18,17 +18,25 @@ private:
 public:
 
   Vec();
+  Vec(const Vec & other);
   Vec(const int dim);
-  
 
   friend double operator * (const Vec & A, const Vec & B);
   friend Vec    operator + (const Vec & A, const Vec & B);
-  friend std::ostream & operator << (std::ostream & os, const Vec & A);
-  //Vec operator += (const Vec & other);
-  
+  friend Vec    operator - (const Vec & A, const Vec & B);
 
-  //Vec operator -= (const Vec & other);
-  //Vec operator - (const Vec *, const Vec & other);
+  //Note, vector division isnt well defined : consider a scalar multiplication of 1/ x * Vec if you want Vec/x
+
+  Vec& operator *= (const Vec & other);
+  Vec& operator += (const Vec & other);
+  Vec& operator -= (const Vec & other);
+  
+  Vec & operator = (const Vec & other);  
+
+  friend Vec operator * (const double s, const Vec & v);
+  friend Vec operator * (const Vec & v, const double s); //scalar multiplication
+
+  friend std::ostream & operator << (std::ostream & os, const Vec & A);
 };
 
 
@@ -44,9 +52,11 @@ Vec::Vec(void) : vector<double>()
 {
 }
 
+
 Vec::Vec(const int dim) : vector<double>(dim), dim (dim)
 {
 }
+
 
 Vec
 operator +(const Vec & A, const Vec & B)
@@ -63,6 +73,76 @@ operator +(const Vec & A, const Vec & B)
   return temp;
 }
 
+Vec 
+operator - (const Vec & A, const Vec & B)
+{
+  Vec temp (A.dim);
+
+  if (A.dim != B.dim) 
+    return temp;
+  cout << "vector subtraction between " << A << "\nand " << B << endl;
+
+  for (int i = 0; i < A.dim; i++)
+    temp[i] = A[i] - B[i];
+  
+  return temp;
+}
+
+
+Vec  &
+Vec::operator = (const Vec & other){
+  vector<double>::operator =(other);
+  dim = other.dim;
+  return *this;
+}
+
+
+Vec & 
+Vec::operator *= (const Vec & other)
+{
+  if (this->dim != other.dim)
+    return *this;
+  *this = *this * other;
+  return *this;
+}
+
+
+Vec &
+Vec::operator += (const Vec & other)
+{
+  if (this->dim != other.dim)
+    return *this;
+
+  auto iter_other = other.cbegin();
+  for (auto iter_this = this->begin();
+       iter_this != this->end(); 
+       ++iter_this, ++iter_other)
+  {
+    (*iter_this) += (*iter_other);
+  }
+  return *this;
+
+}
+
+
+Vec&
+Vec::operator -= (const Vec & other)
+{
+  if (this->dim != other.dim) 
+    return *this;
+  
+  auto iter_other = other.cbegin();
+  for (auto iter_this = this->begin();
+    iter_this != this->end(); 
+    ++iter_this, ++iter_other)
+  {
+    (*iter_this) -= (*iter_other);
+  }
+  
+  return *this;
+}
+
+
 std::ostream&
 operator << (std::ostream & os, const Vec& A)
 {
@@ -76,9 +156,27 @@ operator << (std::ostream & os, const Vec& A)
 }
 
 
+Vec 
+operator * (const Vec & other, const double s)
+{
+ return s * other;
+}
+
+
+Vec 
+operator * (const double s, const Vec & other)
+{
+  Vec temp; 
+  
+  for (int i = 0; i < other.dim; i++)
+    temp.push_back(s * other[i]);
+  return temp;
+}
+
 double
 operator * (const Vec & A, const Vec & B)
 {
+
   double dot = 0.0;
 
   if (A.dim != B.dim)
@@ -278,9 +376,14 @@ int main()
   Vec v1(9), v2(9);
   init(v1, 9);
   init(v2, 9);
-  double out = v1 * v2;
-  Vec sum = v1 + v2;
-  cout << "dot product from A.T B : " << out << endl;
-  cout << "vector sum from A + B : " <<  sum << endl;
+  double outDot = v1 * v2;
+  Vec outSub = v1 - v2;
+  Vec outAdd = v1 + v2;
+  Vec outScalarMul = 2.0 * v1;
+
+  cout << "dot product from A.T B : " << outDot << endl;
+  cout << "vector sum from A + B : " <<  outAdd << endl;
+  cout << "vector subtraction from A - B : " <<  outSub << endl;
+  cout << "vector scalar multiplication from 2.0 * A : " <<  outScalarMul << endl;
   return 0;      
 }
