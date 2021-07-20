@@ -27,7 +27,7 @@ public:
 
   //Note, vector division isnt well defined : consider a scalar multiplication of 1/ x * Vec if you want Vec/x
 
-  Vec& operator *= (const Vec & other);
+  Vec& operator *= (const double o);
   Vec& operator += (const Vec & other);
   Vec& operator -= (const Vec & other);
   
@@ -52,6 +52,10 @@ Vec::Vec(void) : vector<double>()
 {
 }
 
+Vec::Vec(const Vec & other) : dim(other.dim)
+{
+  vector<double>::operator =(other);
+}
 
 Vec::Vec(const int dim) : vector<double>(dim), dim (dim)
 {
@@ -95,14 +99,12 @@ Vec::operator = (const Vec & other){
   dim = other.dim;
   return *this;
 }
-
-
 Vec & 
-Vec::operator *= (const Vec & other)
+Vec::operator *= (const double s)
 {
-  if (this->dim != other.dim)
-    return *this;
-  *this = *this * other;
+  for (int i = 0; i < this->dim; i++) 
+   (*this)[i] = (*this)[i] * 5;
+
   return *this;
 }
 
@@ -385,5 +387,8 @@ int main()
   cout << "vector sum from A + B : " <<  outAdd << endl;
   cout << "vector subtraction from A - B : " <<  outSub << endl;
   cout << "vector scalar multiplication from 2.0 * A : " <<  outScalarMul << endl;
+
+  v1 *= 5.0;
+  cout << "v1 * 5.0 " << v1 << endl;
   return 0;      
 }
